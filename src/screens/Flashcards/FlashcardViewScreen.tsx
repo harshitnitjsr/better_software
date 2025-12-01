@@ -7,7 +7,9 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Animated,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   generateFlashcards,
   Flashcard,
@@ -24,6 +26,7 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [flipAnim] = useState(new Animated.Value(0));
 
   const user = useUserStore((state) => state.user);
 
@@ -70,6 +73,12 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
   };
 
   const handleFlip = () => {
+    Animated.spring(flipAnim, {
+      toValue: isFlipped ? 0 : 1,
+      friction: 8,
+      tension: 10,
+      useNativeDriver: true,
+    }).start();
     setIsFlipped(!isFlipped);
   };
 
@@ -77,6 +86,7 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
     if (currentIndex < flashcards.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setIsFlipped(false);
+      flipAnim.setValue(0);
     }
   };
 
@@ -84,20 +94,25 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
       setIsFlipped(false);
+      flipAnim.setValue(0);
     }
   };
 
   const handleRestart = () => {
     setCurrentIndex(0);
     setIsFlipped(false);
+    flipAnim.setValue(0);
   };
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={styles.centerContainer}
+      >
+        <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.loadingText}>Generating flashcards...</Text>
-      </View>
+      </LinearGradient>
     );
   }
 
@@ -115,31 +130,66 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
   const currentCard = flashcards[currentIndex];
   const isLastCard = currentIndex === flashcards.length - 1;
 
+  const frontInterpolate = flipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "180deg"],
+  });
+
+  const backInterpolate = flipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["180deg", "360deg"],
+  });
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={styles.header}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
         <Text style={styles.subject}>{subject}</Text>
         {topic && <Text style={styles.topic}>{topic}</Text>}
         <Text style={styles.progress}>
           Card {currentIndex + 1} of {flashcards.length}
         </Text>
-      </View>
+      </LinearGradient>
 
-      <TouchableOpacity
-        style={[styles.card, isFlipped && styles.cardFlipped]}
-        onPress={handleFlip}
-        activeOpacity={0.8}
-      >
-        <View style={styles.cardContent}>
-          <Text style={styles.cardLabel}>
-            {isFlipped ? "ANSWER" : "QUESTION"}
-          </Text>
-          <Text style={styles.cardText}>
-            {isFlipped ? currentCard.back : currentCard.front}
-          </Text>
-        </View>
-        <Text style={styles.tapHint}>Tap to flip</Text>
-      </TouchableOpacity>
+      <View style={styles.cardContainer}>
+        <TouchableOpacity
+          onPress={handleFlip}
+          activeOpacity={0.9}
+          style={styles.cardTouchable}
+        >
+          <Animated.View
+            style={[
+              styles.card,
+              {
+                transform: [
+                  { rotateY: isFlipped ? backInterpolate : frontInterpolate },
+                ],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={
+                isFlipped ? ["#43e97b", "#38f9d7"] : ["#4facfe", "#00f2fe"]
+              }
+              style={styles.cardGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.cardLabel}>
+                {isFlipped ? "ANSWER" : "QUESTION"}
+              </Text>
+              <Text style={styles.cardText}>
+                {isFlipped ? currentCard.back : currentCard.front}
+              </Text>
+              <Text style={styles.tapHint}>Tap to flip</Text>
+            </LinearGradient>
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.controls}>
         <TouchableOpacity
@@ -150,11 +200,18 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
           onPress={handlePrevious}
           disabled={currentIndex === 0}
         >
-          <Text style={styles.navButtonText}>← Previous</Text>
+          <Text
+            style={[
+              styles.navButtonText,
+              currentIndex === 0 && styles.navButtonTextDisabled,
+            ]}
+          >
+            ← Previous
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.restartButton} onPress={handleRestart}>
-          <Text style={styles.restartButtonText}>Restart</Text>
+          <Text style={styles.restartButtonText}>🔄 Restart</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -162,20 +219,32 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
           onPress={handleNext}
           disabled={isLastCard}
         >
-          <Text style={styles.navButtonText}>Next →</Text>
+          <Text
+            style={[
+              styles.navButtonText,
+              isLastCard && styles.navButtonTextDisabled,
+            ]}
+          >
+            Next →
+          </Text>
         </TouchableOpacity>
       </View>
 
       {isLastCard && (
         <View style={styles.completeContainer}>
-          <Text style={styles.completeText}>
-            You've reached the end of this set!
-          </Text>
+          <Text style={styles.completeText}>🎉 You've completed this set!</Text>
           <TouchableOpacity
-            style={styles.doneButton}
             onPress={() => navigation.goBack()}
+            activeOpacity={0.8}
           >
-            <Text style={styles.doneButtonText}>Done</Text>
+            <LinearGradient
+              colors={["#fa709a", "#fee140"]}
+              style={styles.doneButton}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       )}
@@ -186,8 +255,7 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 20,
+    backgroundColor: "#f8f9fa",
   },
   centerContainer: {
     flex: 1,
@@ -196,131 +264,174 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
+    padding: 20,
+    paddingTop: 30,
     alignItems: "center",
-    marginBottom: 20,
   },
   subject: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 4,
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 6,
   },
   topic: {
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
+    opacity: 0.9,
     marginBottom: 8,
   },
   progress: {
     fontSize: 14,
-    color: "#999",
+    color: "#fff",
+    opacity: 0.8,
+    fontWeight: "600",
   },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 30,
-    minHeight: 300,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    marginBottom: 20,
-  },
-  cardFlipped: {
-    backgroundColor: "#007AFF",
-  },
-  cardContent: {
+  cardContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
+  },
+  cardTouchable: {
+    width: width - 40,
+    height: 400,
+  },
+  card: {
+    width: "100%",
+    height: "100%",
+    backfaceVisibility: "hidden",
+  },
+  cardGradient: {
+    flex: 1,
+    borderRadius: 24,
+    padding: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
   },
   cardLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#999",
-    marginBottom: 16,
-    letterSpacing: 1,
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#fff",
+    opacity: 0.8,
+    marginBottom: 20,
+    letterSpacing: 2,
   },
   cardText: {
-    fontSize: 20,
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#fff",
     textAlign: "center",
-    lineHeight: 28,
+    lineHeight: 32,
   },
   tapHint: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 16,
+    fontSize: 14,
+    color: "#fff",
+    opacity: 0.7,
+    marginTop: 20,
+    fontStyle: "italic",
   },
   controls: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    padding: 20,
   },
   navButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: "#007AFF",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    backgroundColor: "#667eea",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   navButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: "#ddd",
   },
   navButtonText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
   },
+  navButtonTextDisabled: {
+    color: "#999",
+  },
   restartButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#007AFF",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    backgroundColor: "#f093fb",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   restartButtonText: {
-    color: "#007AFF",
-    fontSize: 14,
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "600",
   },
   completeContainer: {
     alignItems: "center",
-    marginTop: 20,
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    margin: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   completeText: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 20,
     textAlign: "center",
   },
   doneButton: {
-    backgroundColor: "#34C759",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   doneButtonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
   },
   errorText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#666",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
+    backgroundColor: "#667eea",
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   retryButtonText: {
     color: "#fff",

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   getUserProgress,
   getUserQuizHistory,
@@ -55,20 +56,23 @@ export default function ProgressScreen() {
 
   if (!user) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.guestText}>👤</Text>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={styles.centerContainer}
+      >
+        <Text style={styles.guestIcon}>👤</Text>
         <Text style={styles.guestMessage}>Login to track your progress</Text>
         <Text style={styles.guestHint}>
           Complete quizzes and create flashcards to see your stats here
         </Text>
-      </View>
+      </LinearGradient>
     );
   }
 
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#667eea" />
         <Text style={styles.loadingText}>Loading your progress...</Text>
       </View>
     );
@@ -83,10 +87,15 @@ export default function ProgressScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View style={styles.header}>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={styles.header}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
         <Text style={styles.title}>Your Progress</Text>
         <Text style={styles.subtitle}>Keep learning and growing! 🌱</Text>
-      </View>
+      </LinearGradient>
 
       {!hasProgress ? (
         <View style={styles.emptyState}>
@@ -100,36 +109,61 @@ export default function ProgressScreen() {
         <>
           {/* Stats Grid */}
           <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
+            <LinearGradient
+              colors={["#4facfe", "#00f2fe"]}
+              style={styles.statCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <Text style={styles.statValue}>{progress.totalQuizzesTaken}</Text>
-              <Text style={styles.statLabel}>Quizzes Taken</Text>
-            </View>
-            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>Quizzes</Text>
+            </LinearGradient>
+            <LinearGradient
+              colors={["#43e97b", "#38f9d7"]}
+              style={styles.statCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <Text style={styles.statValue}>
                 {progress.totalQuestionsAnswered}
               </Text>
-              <Text style={styles.statLabel}>Questions Answered</Text>
-            </View>
-            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>Questions</Text>
+            </LinearGradient>
+            <LinearGradient
+              colors={["#fa709a", "#fee140"]}
+              style={styles.statCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <Text style={styles.statValue}>
                 {progress.averageScore.toFixed(1)}%
               </Text>
-              <Text style={styles.statLabel}>Average Score</Text>
-            </View>
-            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>Avg Score</Text>
+            </LinearGradient>
+            <LinearGradient
+              colors={["#a8edea", "#fed6e3"]}
+              style={styles.statCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <Text style={styles.statValue}>{progress.xp}</Text>
-              <Text style={styles.statLabel}>XP Earned</Text>
-            </View>
+              <Text style={styles.statLabel}>XP</Text>
+            </LinearGradient>
           </View>
 
           {/* Streak Card */}
-          <View style={styles.streakCard}>
+          <LinearGradient
+            colors={["#f093fb", "#f5576c"]}
+            style={styles.streakCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
             <Text style={styles.streakIcon}>🔥</Text>
             <View style={styles.streakContent}>
               <Text style={styles.streakValue}>{progress.streakDays} Days</Text>
               <Text style={styles.streakLabel}>Current Streak</Text>
             </View>
-          </View>
+          </LinearGradient>
 
           {/* Recent Quiz History */}
           {recentQuizzes.length > 0 && (
@@ -210,174 +244,186 @@ function formatDate(date: Date): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f8f9fa",
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
   },
   header: {
-    padding: 20,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    padding: 30,
+    paddingTop: 50,
+    paddingBottom: 40,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 4,
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 16,
+    color: "#fff",
+    opacity: 0.9,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
     color: "#666",
   },
-  guestText: {
-    fontSize: 60,
-    marginBottom: 16,
+  guestIcon: {
+    fontSize: 80,
+    marginBottom: 24,
   },
   guestMessage: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 8,
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 12,
     textAlign: "center",
   },
   guestHint: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 16,
+    color: "#fff",
+    opacity: 0.9,
     textAlign: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 40,
   },
   emptyState: {
-    padding: 40,
+    padding: 60,
     alignItems: "center",
   },
   emptyIcon: {
-    fontSize: 60,
-    marginBottom: 16,
+    fontSize: 80,
+    marginBottom: 24,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 8,
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 12,
+    color: "#333",
   },
   emptyMessage: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#666",
     textAlign: "center",
+    lineHeight: 24,
   },
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    padding: 12,
+    padding: 16,
   },
   statCard: {
     width: "48%",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     margin: "1%",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   statValue: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#007AFF",
-    marginBottom: 4,
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 6,
   },
   statLabel: {
-    fontSize: 12,
-    color: "#666",
+    fontSize: 14,
+    color: "#fff",
     textAlign: "center",
+    fontWeight: "600",
+    opacity: 0.9,
   },
   streakCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 24,
     margin: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   streakIcon: {
-    fontSize: 48,
-    marginRight: 16,
+    fontSize: 56,
+    marginRight: 20,
   },
   streakContent: {
     flex: 1,
   },
   streakValue: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FF6B35",
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 4,
   },
   streakLabel: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 16,
+    color: "#fff",
+    opacity: 0.9,
+    fontWeight: "600",
   },
   section: {
     padding: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 12,
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 16,
+    color: "#333",
+    paddingHorizontal: 4,
   },
   quizCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   quizHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   quizSubject: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
     flex: 1,
+    color: "#333",
   },
   quizScore: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "800",
   },
   scoreGood: {
-    color: "#34C759",
+    color: "#43e97b",
   },
   scoreMedium: {
-    color: "#FF9500",
+    color: "#fa709a",
   },
   scorePoor: {
-    color: "#FF3B30",
+    color: "#f5576c",
   },
   quizTopic: {
     fontSize: 14,
     color: "#666",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   quizFooter: {
     flexDirection: "row",
