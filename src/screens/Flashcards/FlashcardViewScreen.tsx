@@ -9,6 +9,7 @@ import {
   Dimensions,
   Animated,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   generateFlashcards,
@@ -182,9 +183,11 @@ export default function FlashcardViewScreen({ route, navigation }: any) {
               <Text style={styles.cardLabel}>
                 {isFlipped ? "ANSWER" : "QUESTION"}
               </Text>
-              <Text style={styles.cardText}>
-                {isFlipped ? currentCard.back : currentCard.front}
-              </Text>
+              <View style={styles.cardTextContainer}>
+                <Markdown style={markdownStyles}>
+                  {isFlipped ? currentCard.back : currentCard.front}
+                </Markdown>
+              </View>
               <Text style={styles.tapHint}>Tap to flip</Text>
             </LinearGradient>
           </Animated.View>
@@ -321,6 +324,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     letterSpacing: 2,
   },
+  cardTextContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   cardText: {
     fontSize: 22,
     fontWeight: "600",
@@ -439,3 +447,40 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+const markdownStyles = {
+  body: {
+    fontSize: 20,
+    lineHeight: 30,
+    color: "#fff",
+    textAlign: "center",
+  },
+  heading1: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: "#fff",
+    textAlign: "center",
+  },
+  code_inline: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontFamily: "monospace",
+    fontSize: 18,
+    color: "#fff",
+  },
+  code_block: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: "monospace",
+    fontSize: 16,
+    color: "#fff",
+  },
+  paragraph: {
+    marginVertical: 4,
+    textAlign: "center",
+  },
+};

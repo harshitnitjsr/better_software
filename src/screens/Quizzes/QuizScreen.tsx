@@ -8,6 +8,8 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
+import { LinearGradient } from "expo-linear-gradient";
 import { generateQuiz } from "../../services/ai/quizGenerator";
 import { saveQuizHistory } from "../../services/firebase/firestoreService";
 import { useUserStore } from "../../store/userStore";
@@ -174,7 +176,9 @@ export default function QuizScreen({ route, navigation }: any) {
       </View>
 
       <ScrollView style={styles.content}>
-        <Text style={styles.questionText}>{question.question}</Text>
+        <View style={styles.questionCard}>
+          <Markdown style={markdownStyles}>{question.question}</Markdown>
+        </View>
 
         <View style={styles.optionsContainer}>
           {question.options.map((option, index) => {
@@ -228,7 +232,7 @@ export default function QuizScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f8f9fa",
   },
   centerContainer: {
     flex: 1,
@@ -237,13 +241,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    backgroundColor: "#0066cc",
-    padding: 16,
+    backgroundColor: "#667eea",
+    padding: 20,
     alignItems: "center",
   },
   topicText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "700",
     color: "#fff",
     marginBottom: 4,
   },
@@ -254,6 +258,17 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+  },
+  questionCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   questionText: {
     fontSize: 20,
@@ -371,3 +386,32 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+const markdownStyles = {
+  body: {
+    fontSize: 18,
+    lineHeight: 28,
+    color: "#333",
+  },
+  heading1: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: "#667eea",
+  },
+  code_inline: {
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontFamily: "monospace",
+    fontSize: 16,
+  },
+  code_block: {
+    backgroundColor: "#f5f5f5",
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: "monospace",
+    fontSize: 14,
+  },
+};
